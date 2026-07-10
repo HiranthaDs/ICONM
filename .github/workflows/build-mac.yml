@@ -27,7 +27,7 @@ jobs:
       run: hdiutil create -volname "IMERP" -srcfolder dist/IMERP.app -ov -format UDZO IMERP.dmg
 
     - name: Upload DMG
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: IMERP-Mac-Installer
         path: IMERP.dmg
