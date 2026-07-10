@@ -58,6 +58,21 @@ jobs:
           codesign --verify --deep --strict "dist/ICON MOBILE ERP.app"
           plutil -lint "dist/ICON MOBILE ERP.app/Contents/Info.plist"
           file "dist/ICON MOBILE ERP.app/Contents/MacOS/ICON MOBILE ERP"
+          rm -rf "$HOME/Library/Application Support/IMERP V GM"
+          "dist/ICON MOBILE ERP.app/Contents/MacOS/ICON MOBILE ERP" --smoke-test
+          test -f "$HOME/Library/Application Support/IMERP V GM/logs/packaged_smoke_test.ok"
+
+      - name: Verify DMG contents
+        run: |
+          MOUNT_POINT="$RUNNER_TEMP/icon-mobile-dmg-${{ matrix.suffix }}"
+          mkdir -p "$MOUNT_POINT"
+          hdiutil attach -readonly -nobrowse \
+            -mountpoint "$MOUNT_POINT" "dist/ICON_MOBILE_ERP_macOS.dmg"
+          trap 'hdiutil detach "$MOUNT_POINT"' EXIT
+          test -d "$MOUNT_POINT/ICON MOBILE ERP.app"
+          test -L "$MOUNT_POINT/Applications"
+          hdiutil detach "$MOUNT_POINT"
+          trap - EXIT
 
       - name: Name installer for architecture
         run: |

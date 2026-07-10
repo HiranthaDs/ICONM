@@ -11,6 +11,12 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
+python3 - <<'PY'
+import sys
+if sys.version_info < (3, 12):
+    raise SystemExit("Python 3.12 or newer is required to build this app.")
+PY
+
 python3 -m venv .venv-build
 source .venv-build/bin/activate
 python -m pip install --upgrade pip setuptools wheel
@@ -56,6 +62,7 @@ if [ -d "$APP_PATH" ]; then
     rm -f "dist/ICON_MOBILE_ERP_macOS.dmg"
     hdiutil create -volname "ICON MOBILE ERP" -srcfolder "$DMG_STAGE" -ov -format UDZO "dist/ICON_MOBILE_ERP_macOS.dmg"
     rm -rf "$DMG_STAGE"
+    hdiutil verify "dist/ICON_MOBILE_ERP_macOS.dmg"
   fi
   echo ""
   echo "Build complete:"

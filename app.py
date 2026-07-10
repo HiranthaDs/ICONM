@@ -6937,6 +6937,24 @@ ERPApp.restock_selected_product = safe_run(_v6_restock_selected_product)
 
 def main():
     init_db()
+    if "--smoke-test" in sys.argv:
+        # Used by the macOS release build to validate the frozen application,
+        # writable Application Support database, PDF/image dependencies and
+        # bundled branding without opening an interactive window.
+        import PIL  # noqa: F401
+        import reportlab  # noqa: F401
+        from config import ASSET_IMAGE_DIR, DB_PATH
+
+        if not DB_PATH.is_file():
+            raise RuntimeError(f"Database was not created: {DB_PATH}")
+        if not query_one("SELECT id FROM users WHERE username='admin'"):
+            raise RuntimeError("Default administrator account was not created")
+        if not (ASSET_IMAGE_DIR / "logo.png").is_file():
+            raise RuntimeError("Bundled application logo is missing")
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        (LOG_DIR / "packaged_smoke_test.ok").write_text(
+            "ICON MOBILE ERP packaged smoke test passed\n", encoding="utf-8")
+        return
     app = LoginWindow()
     app.mainloop()
 
