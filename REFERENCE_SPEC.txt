@@ -1,0 +1,1137 @@
+You are an expert senior software architect, Python desktop app developer, ERP/POS system engineer, SQLite database designer, and premium UI/UX designer.
+
+Build a complete, production-ready, real-world retail + wholesale ERP/POS desktop application for a phone shop named ICON MOBILE.
+
+This system must be built as a full Python desktop application, not a web app. Use Python 3, SQLite, and a modern desktop UI. Recommended UI framework: PySide6 or customtkinter. If using Tkinter, make the UI highly polished and Apple/macOS style. The final system must be easy for non-technical staff to use.
+
+The system must be simple, clean, fast, and understandable. The current issue is that inventory logic, billing flow, partner payment, and finance are confusing. Rebuild the complete system with perfect business logic.
+
+Use the attached HTML files as design and behavior references:
+
+1. `invoice.html`
+   Use this as the premium invoice/PDF layout reference. The PDF must look clean, premium, white-background, Apple-style, not cheap, no dark table heads. Use logo and images from the local `images` folder.
+
+2. `index(17).html`
+   Use this as the POS/billing feature and UI reference.
+
+3. `ADMINPRO.html`
+   Use this as the admin inventory and analytics reference.
+
+4. `wholesale(4).html`
+   Use this as the wholesale/partner portal logic reference.
+
+Important: Do not generate a small demo. Generate a complete working full system with all files, all code, all logic, all database tables, all PDF functions, all UI pages, all run commands, and all setup files.
+
+Target folder path on Windows:
+
+C:\Users\Hirantha Dias\Desktop\ICM PY SYS PRO V6
+
+Also include macOS run commands.
+
+System name:
+
+ICON MOBILE ERP / ICM PY SYS PRO
+
+Default login:
+
+Admin username: admin
+Admin password: ICONM@2026
+
+Staff username: staff
+Staff password: STAFF@2026
+
+Same-WiFi sync password: 11111
+
+Main requirement:
+
+This must be a full real-world ERP/POS system for a mobile phone shop with:
+
+* Retail billing
+* Inventory management
+* IMEI/serial unit tracking
+* Bulk accessories stock
+* Partner/wholesale shop profiles
+* Wholesale issue invoices
+* FIFO partner payment allocation
+* Finance dashboard
+* PDF invoices
+* WhatsApp sending support
+* Customer history
+* Stock details popup
+* Backup/restore
+* Same-WiFi app sync
+* Admin/staff access control
+* Premium Apple/macOS style UI
+
+Do not skip any part.
+
+PROJECT STRUCTURE
+
+Generate this full structure:
+
+ICM PY SYS PRO V6/
+├─ app.py
+├─ database.py
+├─ services.py
+├─ pdf_utils.py
+├─ ui_components.py
+├─ sync_server.py
+├─ diagnose.py
+├─ config.py
+├─ requirements.txt
+├─ START_HERE.bat
+├─ DEBUG_RUN.bat
+├─ RUN_APP.bat
+├─ mac_install.sh
+├─ README.md
+├─ data/
+│  └─ icm_erp.sqlite3
+├─ invoices/
+├─ wholesale_invoices/
+├─ statements/
+├─ backups/
+├─ exports/
+├─ images/
+│  ├─ logo.png
+│  ├─ logo watermark.png
+│  ├─ Google reviews.png
+│  ├─ Map Qr.png
+│  ├─ google.png
+│  ├─ googlemap.png
+│  └─ Warranty.png
+└─ logs/
+
+If the images do not exist, the system must not crash. It must simply continue without them.
+
+DATABASE DESIGN
+
+Use SQLite with a strong normalized structure.
+
+Required tables:
+
+users:
+
+* id
+* username
+* password_hash
+* role: admin/staff
+* active
+* created_at
+
+products:
+
+* id
+* product_code / SKU
+* product_type: Phone, Laptop, Tablet, Watch, Smartwatch, Accessories, Audio, Gaming, Spare Part, Service, Other
+* brand
+* model
+* category
+* color
+* specs_json
+* selling_price
+* current_avg_cost
+* total_quantity
+* available_quantity
+* sold_quantity
+* status
+* created_at
+* updated_at
+
+stock_batches:
+
+* id
+* product_id
+* supplier_name
+* supplier_phone
+* quantity_added
+* unit_cost
+* old_avg_cost
+* new_avg_cost
+* old_quantity
+* new_quantity
+* stock_value_added
+* notes
+* created_at
+
+stock_units:
+
+* id
+* product_id
+* batch_id
+* unit_code / IMEI / serial
+* supplier_name
+* cost_price
+* selling_price
+* status: Available, Sold, PartnerIssued, Returned, Damaged
+* invoice_id
+* partner_invoice_id
+* sold_at
+* created_at
+
+customers:
+
+* id
+* name
+* whatsapp
+* email
+* created_at
+
+invoices:
+
+* id
+* invoice_no
+* customer_id
+* customer_name
+* whatsapp
+* email
+* invoice_date
+* subtotal
+* extended_warranty_total
+* discount
+* grand_total
+* paid_total
+* due_total
+* payment_status: Paid, Partial, Due
+* payment_breakdown_json
+* general_warranty_label
+* general_warranty_days
+* general_warranty_expiry
+* extended_warranty_label
+* extended_warranty_days
+* extended_warranty_amount
+* extended_warranty_expiry
+* pdf_path
+* created_by
+* created_at
+
+invoice_items:
+
+* id
+* invoice_id
+* product_id
+* unit_id nullable
+* product_name
+* sku
+* imei_or_serial
+* quantity
+* unit_price
+* cost_price
+* profit
+* warranty_json
+* line_total
+* status
+
+payments:
+
+* id
+* invoice_id
+* payment_method
+* amount
+* reference
+* created_at
+
+partners:
+
+* id
+* shop_name
+* owner_name
+* whatsapp
+* email
+* address
+* notes
+* created_at
+
+partner_invoices:
+
+* id
+* partner_id
+* invoice_no
+* invoice_date
+* subtotal
+* discount
+* grand_total
+* paid_total
+* due_total
+* status: Paid, Partial, Due
+* payment_breakdown_json
+* pdf_path
+* created_at
+
+partner_invoice_items:
+
+* id
+* partner_invoice_id
+* product_id
+* unit_id nullable
+* product_name
+* sku
+* imei_or_serial
+* quantity
+* selling_price
+* cost_price
+* profit
+* line_total
+* status
+
+partner_payments:
+
+* id
+* partner_id
+* payment_no
+* payment_date
+* amount
+* method
+* reference
+* allocation_json
+* statement_pdf_path
+* created_at
+
+partner_payment_allocations:
+
+* id
+* partner_payment_id
+* partner_invoice_id
+* amount_allocated
+* invoice_due_before
+* invoice_due_after
+* created_at
+
+audit_logs:
+
+* id
+* user_id
+* action
+* entity_type
+* entity_id
+* details_json
+* created_at
+
+backup_logs:
+
+* id
+* backup_path
+* created_at
+
+sync_logs:
+
+* id
+* device_name
+* action
+* status
+* created_at
+
+INVENTORY LOGIC — VERY IMPORTANT
+
+Inventory must be perfect.
+
+Do not ask staff to choose “Serialized” or “Bulk/Accessories” manually. The system must decide automatically.
+
+Product types that normally require unit tracking:
+
+* Phone
+* Laptop
+* Tablet
+* Watch
+* Smartwatch
+* Gaming device
+
+These products should support IMEI/serial unit tracking.
+
+Accessories and general bulk products:
+
+* Accessories
+* Audio
+* Cable
+* Charger
+* Case
+* Screen protector
+* Power bank
+* Spare Part
+* Other bulk stock
+
+These can be quantity-based. However, if staff enters serial/IMEI lines, the system must also support unit tracking.
+
+Inventory add/restock screen must be simple:
+
+Fields:
+
+* Product Type dropdown
+* Brand
+* Model
+* Category
+* Color
+* Specs
+* SKU/Product Code
+* Supplier Name
+* Supplier Phone optional
+* Quantity
+* Cost Price
+* Selling Price
+* Notes
+* Serial/IMEI Units section
+
+Serial/IMEI Units section:
+
+* Always visible but collapsible.
+* Has a big text area where staff can paste multiple IMEIs, one per line.
+* Has button: “Open Separate Fields”
+* If quantity is 10, clicking Open Separate Fields shows 10 separate text fields/text areas.
+* Has button: “Generate Auto IDs”
+* Auto IDs should generate unique internal IDs like:
+  ICM-AUTO-YYYYMMDD-0001
+  ICM-AUTO-YYYYMMDD-0002
+* Has button: “Clear Serial Lines”
+* If serial lines are empty, stock is treated as bulk quantity.
+* If serial lines exist, create stock_units one by one.
+* If quantity is 10 and only 5 serials entered, show warning and ask whether to auto-generate remaining 5.
+* Block duplicate serial/IMEI in the full database.
+* Block empty or repeated serial values.
+* For restock of existing product, do not copy existing IMEIs into the new restock serial box. The restock serial box must be blank.
+
+Average cost logic:
+
+* When restocking the same product from different suppliers with different cost prices, calculate weighted average cost:
+  new_avg_cost = ((old_qty * old_avg_cost) + (new_qty * new_unit_cost)) / (old_qty + new_qty)
+* Save old average cost and new average cost in stock_batches.
+* Finance must use actual unit cost for serialized items and average/batch cost for bulk items.
+* Stock Details popup must show each supplier/batch separately.
+
+Inventory table:
+
+* Show all products in a clean table:
+  Product Code, Type, Brand, Model, Available Qty, Sold Qty, Avg Cost, Selling Price, Stock Asset, Status, Actions.
+* Add search:
+  SKU, brand, model, category, IMEI full, IMEI last 5 digits, supplier.
+* Add filters:
+  All, Available, Low Stock, Sold Out, Serialized, Bulk, Supplier, Product Type.
+* Double-click product to open Stock Details popup.
+
+Stock Details popup:
+Must be very detailed and scrollable.
+
+Show summary:
+
+* Product ID
+* Product name
+* SKU
+* Product type
+* Total quantity
+* Available quantity
+* Sold quantity
+* Average cost
+* Selling price
+* Total asset value
+* Total expected selling value
+* Expected gross profit
+
+Show unit table:
+
+* ID
+* Name
+* Supplier
+* IMEI/SKU
+* Cost
+* Selling
+* Profit
+* Status: Available / Sold / Partner Issued / Returned
+* Invoice No
+* Sold Date
+* Batch No
+
+For sold units, show a red SOLD tag in front of the IMEI.
+
+For available units, show green AVAILABLE tag.
+
+For partner-issued units, show blue PARTNER tag.
+
+Show restock batches:
+
+* Batch ID
+* Supplier
+* Quantity
+* Unit Cost
+* Old Avg Cost
+* New Avg Cost
+* Date
+* Notes
+
+BILLING / POS LOGIC
+
+Billing must be fast and simple.
+
+Billing screen layout:
+
+Left side:
+
+* Customer details card
+* Search/add item card
+* Selected cart table
+
+Right side:
+
+* Warranty card
+* Payment card
+* Invoice summary
+* Save invoice button
+
+Billing flow:
+
+1. Customer Details
+
+* Client name required
+* WhatsApp number required
+* Email optional
+
+2. Add items
+   Staff can add item by:
+
+* Search by product name
+* SKU
+* Full IMEI/serial
+* Last 5 digits of IMEI/serial
+* Open All Items picker
+
+Search result must show:
+
+* Product name
+* SKU
+* Available quantity
+* Price
+* If serialized: available unit count
+
+If staff searches last 5 digits and one IMEI matches:
+
+* Show exact unit and allow Add to Cart.
+  If multiple units match:
+* Show unit picker popup.
+
+Open All Items / Unit Picker popup:
+
+* Shows product list on left.
+* Search box on top.
+* When selecting a product, show all available units on the right.
+* For serialized item:
+  show IMEI, supplier, cost, selling, profit, status.
+  user can double-click one exact IMEI to add to cart.
+* For bulk item:
+  show quantity input and Add button.
+* Double-click product in billing should open all units of that product.
+* Double-click specific unit should add it to cart.
+
+Cart table:
+
+* Product
+* SKU
+* IMEI/Serial
+* Qty
+* Unit Price
+* Ext Warranty
+* Line Total
+* Remove button
+
+For phones/watches/laptops:
+
+* Cart must store exact stock_unit id.
+* Cannot add same IMEI twice.
+* Cannot sell Sold item again.
+* When invoice saved, exact unit status becomes Sold and invoice id is saved in stock_units.
+
+For bulk/accessories:
+
+* Reduce product available quantity by quantity sold.
+* If available quantity is not enough, block save.
+
+3. Warranty
+   General warranty:
+
+* Dropdown:
+  No Warranty
+  7 Days
+  14 Days
+  30 Days
+  3 Months
+  6 Months
+  1 Year
+  Manual Days
+* Only show manual day input when Manual Days is selected.
+* Automatically calculate warranty expiry date.
+* Save expiry date in database, invoice item, customer details, and PDF.
+
+Extended warranty:
+
+* Dropdown:
+  No Extended
+  1 Year Extended
+  2 Years Extended
+  3 Years Extended
+  Manual Days
+* Amount optional.
+* Only show manual day input when Manual Days is selected.
+* Automatically calculate extended warranty expiry date.
+* Add extended warranty amount to invoice total.
+* Payment section must include item total + extended warranty amount.
+
+4. Payment
+   Payment must be flexible and real time.
+
+Default payment rows:
+
+* Cash
+* Card
+* Koko
+* Bank Transfer
+* Online Transfer
+* Credit
+* Custom
+
+User can add multiple payment methods.
+
+Example:
+Grand total = 1000
+Cash = 500
+Remaining = 500
+Card = 300
+Remaining = 200
+Custom = 200
+Remaining = 0
+
+Payment UI must show:
+
+* Items subtotal
+* Extended warranty total
+* Discount
+* Grand total
+* Paid total
+* Remaining due
+* Change/balance if overpaid
+
+If due remains, invoice status = Partial or Due.
+If paid full, status = Paid.
+
+Fix bug:
+Adding custom/+ payment method must not break save invoice.
+
+When saving invoice:
+
+* Save customer
+* Save invoice
+* Save invoice items
+* Save payments
+* Reduce stock
+* Mark exact serialized units Sold
+* Generate PDF
+* Open PDF automatically
+* Show popup:
+  “Invoice saved. Send invoice details to client on WhatsApp?”
+  Buttons:
+
+  * Send WhatsApp
+  * Open PDF
+  * Close
+
+WhatsApp invoice:
+
+* Open WhatsApp Web or wa.me with customer number and message.
+* Message must include invoice number, customer name, items list, total, paid, due, warranty expiry, and note saying PDF is attached manually.
+* Also open/select PDF folder so staff can attach PDF.
+
+INVOICE PDF REQUIREMENTS
+
+PDF must be premium and clean, similar to the attached `invoice.html`.
+
+Do not use dark background table headers.
+Do not write “PREMIUM INVOICE”.
+Use only “INVOICE”.
+
+PDF layout:
+
+* A4 portrait
+* White background
+* Logo from `images/logo.png`
+* Optional watermark from `images/logo watermark.png`
+* Company header:
+  ICON MOBILE
+  No:59, First Floor, Liberty Plaza, Colombo 03
+  +94 77 27 29 226
+* Invoice number
+* Date
+* Customer name
+* WhatsApp
+* Email optional
+* Payment method summary
+* QR code optional
+* Items table with light gray text headings, not dark blocks:
+  Description, Serial/ID, Warranty, Qty, Price
+* Show warranty expiry dates
+* Show extended warranty amount
+* Show subtotal, discount, total, paid, due
+* Show Google review QR and map QR if images exist:
+  Google reviews.png
+  Map Qr.png
+  google.png
+  googlemap.png
+* Show client signature line and authorized signature line
+* Show warranty terms
+* Use professional spacing, premium typography, clean line separators
+* PDF filename:
+  Invoice_<invoice_no>*<client_name>*<date>.pdf
+
+CLIENT DETAILS PAGE
+
+Client page must show one clean advanced table.
+
+Search options:
+
+* Customer name
+* WhatsApp
+* Invoice number
+* IMEI/serial
+* Product name
+
+Filters:
+
+* All
+* Today
+* This Month
+* This Year
+* Specific Date
+* Paid
+* Due
+* Partial
+
+Table columns:
+
+* Date
+* Invoice No
+* Customer
+* WhatsApp
+* Items summary
+* Total
+* Paid
+* Due
+* Warranty Expiry
+* PDF button
+* WhatsApp button
+
+When clicking invoice:
+
+* Open invoice detail popup.
+* Show customer details, items, payments, warranty, PDF path.
+* Open PDF button.
+
+PARTNER / WHOLESALE SYSTEM
+
+Make partner portal simple and powerful.
+
+Do not put everything in one crowded page.
+
+Partner portal pages/tabs:
+
+1. Shop Profiles
+2. Issue Items
+3. Quick Payment
+4. History & Due
+5. Statements
+
+Shop Profiles:
+
+* Show shop cards/table:
+  Shop name
+  WhatsApp
+  Total issued
+  Total paid
+  Total due
+  Last payment date
+  Status
+* Search shop by name/phone.
+* Double-click shop to open profile.
+
+Shop profile popup/page:
+
+* Shop info
+* Total issued
+* Total paid
+* Total due
+* Due item list
+* Invoice history
+* Payment history
+* Buttons:
+  Issue Items
+  Add Payment
+  Save Statement PDF
+  Send WhatsApp Statement
+
+Issue Items:
+
+* Select shop dropdown
+* Add items using same product/unit picker as billing.
+* Must allow changing wholesale selling price at issue time.
+* Show real-time:
+  subtotal
+  paid amount
+  due amount
+* Payment options:
+  Cash, Card, Bank Transfer, Online Transfer, Credit, Custom
+* Save partner invoice
+* Reduce stock:
+  serialized units become PartnerIssued
+  bulk qty reduced
+* Save wholesale invoice PDF
+* Open PDF
+* WhatsApp message to shop.
+
+Partner payment / FIFO Allocation:
+This must be easy.
+
+Payment page:
+
+* Select shop dropdown
+* After selecting shop show:
+  Shop name
+  Total due
+  Oldest due invoice
+  Due items list
+  Payment history
+* Enter payment amount
+* Select payment method
+* Add reference/note
+* Show live allocation preview:
+  Payment will pay invoice #1: amount
+  Remaining goes to invoice #2: amount
+* Save payment
+* Allocate FIFO to oldest unpaid partner invoices.
+* Update invoice paid_total and due_total.
+* If invoice due becomes 0, mark Paid.
+* If partial, mark Partial.
+* Save partner payment record.
+* Save allocation rows.
+* Generate payment receipt/statement PDF.
+* Open PDF.
+* Popup to send WhatsApp statement.
+
+WhatsApp partner statement:
+Must include:
+
+* Shop name
+* Total due amount
+* Payment received
+* Remaining due
+* Due invoice list
+* Due item list
+* Date
+* Thank you message
+* PDF attachment note
+
+Partner due item list:
+For each unpaid/partial invoice show:
+
+* invoice no
+* date
+* product
+* IMEI/serial/SKU
+* qty
+* selling price
+* due balance
+
+FINANCE DASHBOARD
+
+Finance must be real-world and detailed.
+
+Admin only can see finance values.
+Staff can see sold quantities but not prices/profit.
+
+Finance dashboard must include:
+
+* Today revenue
+* This month revenue
+* This year revenue
+* Retail revenue
+* Wholesale revenue
+* Total paid cashflow
+* Total due/receivables
+* COGS
+* Gross profit
+* Gross margin %
+* Inventory asset value
+* Expected selling value
+* Expected profit from available stock
+* Stock sold quantity
+* Available stock quantity
+* Low stock items
+* Top selling products
+* Payment method totals
+* Partner receivables
+* Customer receivables
+
+Charts:
+
+* Daily sales chart
+* Monthly sales chart
+* Yearly sales chart
+* Payment method chart
+* Top items chart
+* Inventory assets by category chart
+
+Tables:
+
+1. Inventory Asset Table
+
+* Product
+* Available qty
+* Avg cost
+* Asset value
+* Selling value
+* Expected profit
+
+2. Sales Income Table
+
+* Invoice
+* Date
+* Customer
+* Total
+* Paid
+* Due
+* Profit
+
+3. Partner Receivable Table
+
+* Shop
+* Total issued
+* Total paid
+* Due
+* Oldest due invoice
+
+4. Payment Method Table
+
+* Method
+* Count
+* Amount
+
+5. Sold Item Detail Table
+
+* Date
+* Product
+* IMEI/SKU
+* Customer/Shop
+* Selling price
+* Cost
+* Profit
+
+Access control:
+
+* Admin sees all values.
+* Staff sees sold item count and product names only, no revenue/cost/profit.
+
+SYNC SYSTEM
+
+Add same-WiFi app sync with password 11111.
+
+Must work inside the app, not only browser.
+
+Sync Center:
+
+* Start Host Server button
+* Show host IP and port
+* Client connect fields:
+  Host IP
+  Password
+* Pull latest database from host
+* Push database to host only if admin
+* Auto-refresh every few seconds
+* Show sync status
+* Log sync events
+
+Important:
+SQLite sync must be safe. Use backup copy transfer, not direct live DB overwrite while writing.
+Before replacing database, create backup.
+
+BACKUP SYSTEM
+
+Weekly backup reminder:
+
+* When app opens, check last backup date.
+* If more than 7 days, show popup:
+  “Weekly backup recommended.”
+  Buttons:
+
+  * Create Backup Now
+  * Remind Later
+
+Backup:
+
+* Create ZIP including:
+  SQLite DB
+  invoices
+  wholesale_invoices
+  statements
+  exports
+* Save to backups folder.
+* Add restore backup option.
+* Restore must ask confirmation and create safety backup first.
+
+UI / UX REQUIREMENTS
+
+Make UI very simple and Apple/macOS style.
+
+UI style:
+
+* White/soft gray background
+* Rounded cards
+* Clean sidebar
+* Top header
+* Blue primary buttons
+* Light table headings
+* Smooth scrollbars
+* No crowded screens
+* All pages must scroll properly.
+* No cropped buttons.
+* Add bottom padding to every scrollable page.
+* Use separate sections and tabs.
+
+Main navigation:
+
+* Dashboard
+* Billing
+* Inventory
+* Clients
+* Partner Shops
+* Finance
+* Backup & Sync
+* Settings
+
+Billing page must be very easy:
+
+* Step 1 Customer
+* Step 2 Add Items
+* Step 3 Warranty
+* Step 4 Payment
+* Step 5 Save
+
+Inventory page:
+
+* Left/Top: Add/Restock form
+* Right/Bottom: Inventory table
+* Two independent scroll areas:
+  inventory manager form scroll
+  inventory table scroll
+
+Partner page:
+
+* Do not make one huge page.
+* Use tabs:
+  Shop Profiles
+  Issue Items
+  Quick Payment
+  History & Due
+  Statements
+
+TECHNICAL REQUIREMENTS
+
+* Use Python 3.11+ compatible code.
+* Use SQLite.
+* Use pathlib for paths.
+* Use reportlab for PDF generation.
+* Use qrcode if needed.
+* Use pillow for image handling.
+* Use bcrypt or hashlib for password hashing.
+* Use dataclasses or clean service classes.
+* Use transactions for invoice saves and stock reduction.
+* If invoice save fails, rollback all changes.
+* If stock reduction fails, do not save invoice.
+* Prevent duplicate invoice numbers.
+* Prevent duplicate IMEI/serial.
+* Prevent selling sold units.
+* Prevent negative stock.
+* Write logs to logs/startup_error.log and logs/app_run_error.log.
+* Include diagnose.py to check Python version, tkinter/PySide, reportlab, Pillow, SQLite DB, users, folders.
+* Include START_HERE.bat for Windows.
+* Include mac_install.sh for macOS.
+* Include README.md with full run instructions.
+
+INVOICE SAVE TRANSACTION LOGIC
+
+When saving retail invoice:
+
+BEGIN TRANSACTION
+
+1. Validate customer fields.
+2. Validate cart not empty.
+3. Validate stock availability.
+4. Validate each serialized unit is Available.
+5. Create or update customer.
+6. Create invoice.
+7. Create invoice items.
+8. Create payment rows.
+9. For each serialized item:
+   update stock_units set status='Sold', invoice_id=invoice.id, sold_at=now.
+10. For each bulk item:
+    reduce products.available_quantity.
+11. Update products sold_quantity.
+12. Generate PDF.
+13. Save pdf_path in invoice.
+    COMMIT
+
+If any step fails:
+ROLLBACK and show clear error.
+
+WHOLESALE ISSUE TRANSACTION
+
+BEGIN TRANSACTION
+
+1. Validate partner/shop.
+2. Validate issue cart.
+3. Validate stock.
+4. Create partner_invoice.
+5. Save partner_invoice_items.
+6. Save initial payment rows if paid amount entered.
+7. Mark serialized units as PartnerIssued.
+8. Reduce bulk quantity.
+9. Generate wholesale invoice PDF.
+10. Save PDF path.
+    COMMIT
+
+PARTNER PAYMENT TRANSACTION
+
+BEGIN TRANSACTION
+
+1. Validate shop selected.
+2. Validate payment amount > 0.
+3. Get oldest unpaid/partial partner invoices ordered by date.
+4. Allocate payment FIFO.
+5. Save partner_payments.
+6. Save partner_payment_allocations.
+7. Update each partner invoice paid_total/due_total/status.
+8. Generate partner statement PDF.
+   COMMIT
+
+DELIVERABLE
+
+Return all complete files with full code. Do not provide partial snippets. Do not say “add your code here”. Do not omit any file.
+
+At the end include:
+
+Windows commands:
+cd "C:\Users\Hirantha Dias\Desktop\ICM PY SYS PRO V6"
+py -3 -m pip install --upgrade pip
+py -3 -m pip install -r requirements.txt
+py -3 diagnose.py
+py -3 app.py
+
+macOS commands:
+cd "$HOME/Desktop/ICM PY SYS PRO V6"
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python diagnose.py
+python app.py
+
+Also include:
+
+* START_HERE.bat
+* DEBUG_RUN.bat
+* RUN_APP.bat
+* mac_install.sh
+
+Final quality rule:
+Think deeply like a senior ERP architect. The system must be simple for staff, advanced in logic, safe for real company data, and visually premium.

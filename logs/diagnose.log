@@ -1,0 +1,12 @@
+ICON MOBILE SYSTEM - Diagnose
+=============================================
+Python: 3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]
+Executable: C:\Python314\python.exe
+Platform: Windows-11-10.0.26200-SP0
+Project folder: C:\Users\Hirantha Dias\Desktop\IMERP V GM
+[OK] tkinter installed
+[OK] SQLite version: 3.50.4
+[OK] reportlab installed
+[OK] Pillow installed
+[OK] Database opened: C:\Users\Hirantha Dias\Desktop\IMERP V GM\data\imerp_v_gm.sqlite3
+[OK] Users: [{'username': 'admin', 'role': 'admin', 'active': 1}, {'username': 'staff', 'role': 'staff', 'active': 1}]

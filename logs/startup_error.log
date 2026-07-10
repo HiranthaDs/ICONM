@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\Users\Hirantha Dias\Desktop\IMERP V GM\app.py", line 49, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\Hirantha Dias\Desktop\IMERP V GM\app.py", line 1463, in change_user_password
+    change_password(self.p_user.get(), self.p_new.get(), self.user); messagebox.showinfo("Saved","Password changed")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hirantha Dias\Desktop\IMERP V GM\services.py", line 115, in change_password
+    raise ValueError("Password must have at least 5 characters")
+ValueError: Password must have at least 5 characters
