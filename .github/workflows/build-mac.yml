@@ -1,33 +1,74 @@
-name: Build Mac DMG
+name: Build macOS DMG
 
-on: [push]
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "*.py"
+      - "images/**"
+      - "assets/**"
+      - "requirements*.txt"
+      - "IMERP_V_GM.spec"
+      - "BUILD_MAC_APP.sh"
+      - ".github/workflows/build-mac.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build-mac:
-    runs-on: macos-latest
+    name: Build ${{ matrix.display_name }} DMG
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            display_name: Apple Silicon
+            suffix: Apple_Silicon
+          - runner: macos-15-intel
+            display_name: Intel
+            suffix: Intel
+    runs-on: ${{ matrix.runner }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Check out source
+        uses: actions/checkout@v7
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
 
-    - name: Install dependencies
-      run: |
-        pip install pyinstaller
-        pip install -r requirements.txt
+      - name: Verify Python and Tk
+        run: |
+          python3 --version
+          python3 -c "import tkinter; print('Tk', tkinter.TkVersion)"
 
-    - name: Build Mac App
-      run: pyinstaller --windowed --name "IMERP" app.py
+      - name: Build app and DMG
+        run: |
+          chmod +x BUILD_MAC_APP.sh
+          ./BUILD_MAC_APP.sh
 
-    - name: Create DMG File
-      run: hdiutil create -volname "IMERP" -srcfolder dist/IMERP.app -ov -format UDZO IMERP.dmg
+      - name: Verify app bundle
+        run: |
+          test -d "dist/ICON MOBILE ERP.app"
+          test -f "dist/ICON_MOBILE_ERP_macOS.dmg"
+          codesign --verify --deep --strict "dist/ICON MOBILE ERP.app"
+          plutil -lint "dist/ICON MOBILE ERP.app/Contents/Info.plist"
+          file "dist/ICON MOBILE ERP.app/Contents/MacOS/ICON MOBILE ERP"
 
-    - name: Upload DMG
-      uses: actions/upload-artifact@v3
-      with:
-        name: IMERP-Mac-Installer
-        path: IMERP.dmg
+      - name: Name installer for architecture
+        run: |
+          mv "dist/ICON_MOBILE_ERP_macOS.dmg" \
+             "dist/ICON_MOBILE_ERP_macOS_${{ matrix.suffix }}.dmg"
+
+      - name: Upload DMG installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: ICON_MOBILE_ERP_macOS_${{ matrix.suffix }}
+          path: dist/ICON_MOBILE_ERP_macOS_${{ matrix.suffix }}.dmg
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
